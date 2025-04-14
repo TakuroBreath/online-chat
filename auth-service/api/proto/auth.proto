@@ -40,6 +40,7 @@ message DeleteUserRequest {
 message GetUserRequest {
     string user_id = 1;
 }
+
 message UserResponse {
     string user_id = 1;
     string username = 2;
