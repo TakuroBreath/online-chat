@@ -43,7 +43,7 @@ func (r *SqliteUserRepository) CreateUser(ctx context.Context, user *models.User
 
 	query := `
 		INSERT INTO users (id, username, password_hach, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES (?, ?, ?, ?, ?)
 	`
 
 	_, err := r.db.ExecContext(ctx, query, user.ID, user.Username, user.Password, user.CreatedAt, user.UpdatedAt)
@@ -63,7 +63,7 @@ func (r *SqliteUserRepository) UserByID(ctx context.Context, id string) (*models
 	query := `
 		SELECT id, username, password_hash, created_at, updated_at
 		FROM users
-		WHERE id = $1
+		WHERE id = ?
 	`
 
 	err := r.db.GetContext(ctx, user, query, id)
@@ -82,7 +82,7 @@ func (r *SqliteUserRepository) UserByUsername(ctx context.Context, username stri
 	query := `
 		SELECT id, username, password_hash, created_at, updated_at
 		FROM users
-		WHERE username = $1
+		WHERE username = ?
 	`
 
 	err := r.db.GetContext(ctx, user, query, username)
@@ -100,8 +100,8 @@ func (r *SqliteUserRepository) UpdateUser(ctx context.Context, user *models.User
 
 	query := `
 		UPDATE users
-		SET username = $1, password_hash = $2, updated_at = $3
-		WHERE id = $4
+		SET username = ?, password_hash = ?, updated_at = ?
+		WHERE id = ?
 	`
 
 	result, err := r.db.ExecContext(ctx, query, user.Username, user.Password, user.UpdatedAt, user.ID)
@@ -126,7 +126,7 @@ func (r *SqliteUserRepository) DeleteUser(ctx context.Context, id string) error 
 
 	query := `
 		DELETE FROM users
-		WHERE id = $1
+		WHERE id = ?
 	`
 
 	result, err := r.db.ExecContext(ctx, query, id)
@@ -159,7 +159,7 @@ func (r *SqliteSessionRepository) CreateSession(ctx context.Context, session *mo
 
 	query := `
 		INSERT INTO sessions (id, user_id, refresh_token, expires_at, created_at, expires_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := r.db.ExecContext(ctx, query, session.ID, session.UserID, session.RefreshToken, session.ExpiresAt, session.CreatedAt, session.ExpiresAt)
@@ -178,7 +178,7 @@ func (r *SqliteSessionRepository) GetByRefreshToken(ctx context.Context, refresh
 	query := `
 		SELECT id, user_id, refresh_token, expires_at, created_at
 		FROM sessions
-		WHERE refresh_token = $1
+		WHERE refresh_token = ?
 	`
 
 	err := r.db.GetContext(ctx, session, query, refreshToken)
@@ -194,7 +194,7 @@ func (r *SqliteSessionRepository) DeleteSession(ctx context.Context, id string) 
 
 	query := `
 		DELETE FROM sessions
-		WHERE id = $1
+		WHERE id = ?
 	`
 
 	result, err := r.db.ExecContext(ctx, query, id)
@@ -219,7 +219,7 @@ func (r *SqliteSessionRepository) DeleteByUserID(ctx context.Context, userID str
 
 	query := `
 		DELETE FROM sessions
-		WHERE user_id = $1
+		WHERE user_id = ?
 	`
 
 	result, err := r.db.ExecContext(ctx, query, userID)
