@@ -145,3 +145,96 @@ func (r *SqliteUserRepository) DeleteUser(ctx context.Context, id string) error 
 
 	return nil
 }
+
+func (r *SqliteSessionRepository) CreateSession(ctx context.Context, session *models.Session) error {
+	var op = "repository.SqliteSessionRepository.CreateSession"
+
+	if session.ID == "" {
+		session.ID = uuid.New().String()
+	}
+
+	now := time.Now()
+	session.CreatedAt = now
+	session.ExpiresAt = now.Add(24 * time.Hour)
+
+	query := `
+		INSERT INTO sessions (id, user_id, refresh_token, expires_at, created_at, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	_, err := r.db.ExecContext(ctx, query, session.ID, session.UserID, session.RefreshToken, session.ExpiresAt, session.CreatedAt, session.ExpiresAt)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (r *SqliteSessionRepository) GetByRefreshToken(ctx context.Context, refreshToken string) (*models.Session, error) {
+	var op = "repository.SqliteSessionRepository.GetByRefreshToken"
+
+	session := &models.Session{}
+
+	query := `
+		SELECT id, user_id, refresh_token, expires_at, created_at
+		FROM sessions
+		WHERE refresh_token = $1
+	`
+
+	err := r.db.GetContext(ctx, session, query, refreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return session, nil
+}
+
+func (r *SqliteSessionRepository) DeleteSession(ctx context.Context, id string) error {
+	var op = "repository.SqliteSessionRepository.DeleteSession"
+
+	query := `
+		DELETE FROM sessions
+		WHERE id = $1
+	`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: %s", op, "session not found")
+	}
+
+	return nil
+}
+
+func (r *SqliteSessionRepository) DeleteByUserID(ctx context.Context, userID string) error {
+	var op = "repository.SqliteSessionRepository.DeleteByUserID"
+
+	query := `
+		DELETE FROM sessions
+		WHERE user_id = $1
+	`
+
+	result, err := r.db.ExecContext(ctx, query, userID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: %s", op, "session not found")
+	}
+
+	return nil
+}
