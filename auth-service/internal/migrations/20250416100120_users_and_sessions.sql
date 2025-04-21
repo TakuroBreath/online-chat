@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP ZONE NOT NULL
+    updated_at TIMESTAMP NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS 
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     user_id TEXT NOT NULL,
     refresh_token TEXT NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL,
-    expires_at TIMESTAMP ZONE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

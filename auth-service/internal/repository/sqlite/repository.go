@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"auth.service/internal/models"
+	"auth.service/internal/repository"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -30,7 +30,7 @@ func NewSessionRepository(db *sqlx.DB) *SqliteSessionRepository {
 	}
 }
 
-func (r *SqliteUserRepository) CreateUser(ctx context.Context, user *models.User) error {
+func (r *SqliteUserRepository) CreateUser(ctx context.Context, user *repository.User) error {
 	var op = "repository.SqliteUserRepository.CreateUser"
 
 	if user.ID == "" {
@@ -42,11 +42,11 @@ func (r *SqliteUserRepository) CreateUser(ctx context.Context, user *models.User
 	user.UpdatedAt = now
 
 	query := `
-		INSERT INTO users (id, username, password_hach, created_at, updated_at)
+		INSERT INTO users (id, username, password_hash, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?)
 	`
 
-	_, err := r.db.ExecContext(ctx, query, user.ID, user.Username, user.Password, user.CreatedAt, user.UpdatedAt)
+	_, err := r.db.ExecContext(ctx, query, user.ID, user.Username, user.PasswordHash, user.CreatedAt, user.UpdatedAt)
 
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -55,10 +55,10 @@ func (r *SqliteUserRepository) CreateUser(ctx context.Context, user *models.User
 	return nil
 }
 
-func (r *SqliteUserRepository) UserByID(ctx context.Context, id string) (*models.User, error) {
+func (r *SqliteUserRepository) UserByID(ctx context.Context, id string) (*repository.User, error) {
 	var op = "repository.SqliteUserRepository.UserByID"
 
-	user := &models.User{}
+	user := &repository.User{}
 
 	query := `
 		SELECT id, username, password_hash, created_at, updated_at
@@ -74,10 +74,10 @@ func (r *SqliteUserRepository) UserByID(ctx context.Context, id string) (*models
 	return user, nil
 }
 
-func (r *SqliteUserRepository) UserByUsername(ctx context.Context, username string) (*models.User, error) {
+func (r *SqliteUserRepository) UserByUsername(ctx context.Context, username string) (*repository.User, error) {
 	var op = "repository.SqliteUserRepository.UserByUsername"
 
-	user := &models.User{}
+	user := &repository.User{}
 
 	query := `
 		SELECT id, username, password_hash, created_at, updated_at
@@ -87,13 +87,18 @@ func (r *SqliteUserRepository) UserByUsername(ctx context.Context, username stri
 
 	err := r.db.GetContext(ctx, user, query, username)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		switch {
+		case err.Error() == "sql: no rows in result set":
+			return nil, repository.ErrUserNotFound
+		default:
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
 	}
 
 	return user, nil
 }
 
-func (r *SqliteUserRepository) UpdateUser(ctx context.Context, user *models.User) error {
+func (r *SqliteUserRepository) UpdateUser(ctx context.Context, user *repository.User) error {
 	var op = "repository.SqliteUserRepository.UpdateUser"
 
 	user.UpdatedAt = time.Now()
@@ -104,7 +109,7 @@ func (r *SqliteUserRepository) UpdateUser(ctx context.Context, user *models.User
 		WHERE id = ?
 	`
 
-	result, err := r.db.ExecContext(ctx, query, user.Username, user.Password, user.UpdatedAt, user.ID)
+	result, err := r.db.ExecContext(ctx, query, user.Username, user.PasswordHash, user.UpdatedAt, user.ID)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -146,7 +151,7 @@ func (r *SqliteUserRepository) DeleteUser(ctx context.Context, id string) error 
 	return nil
 }
 
-func (r *SqliteSessionRepository) CreateSession(ctx context.Context, session *models.Session) error {
+func (r *SqliteSessionRepository) CreateSession(ctx context.Context, session *repository.Session) error {
 	var op = "repository.SqliteSessionRepository.CreateSession"
 
 	if session.ID == "" {
@@ -170,10 +175,10 @@ func (r *SqliteSessionRepository) CreateSession(ctx context.Context, session *mo
 	return nil
 }
 
-func (r *SqliteSessionRepository) GetByRefreshToken(ctx context.Context, refreshToken string) (*models.Session, error) {
+func (r *SqliteSessionRepository) GetByRefreshToken(ctx context.Context, refreshToken string) (*repository.Session, error) {
 	var op = "repository.SqliteSessionRepository.GetByRefreshToken"
 
-	session := &models.Session{}
+	session := &repository.Session{}
 
 	query := `
 		SELECT id, user_id, refresh_token, expires_at, created_at
