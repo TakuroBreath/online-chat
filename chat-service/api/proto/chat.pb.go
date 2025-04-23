@@ -385,7 +385,7 @@ const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"CreateChat\x12\x17.chat.CreateChatRequest\x1a\x18.chat.CreateChatResponse\x12<\n" +
 	"\vConnectChat\x12\x18.chat.ConnectChatRequest\x1a\x11.chat.ChatMessage0\x01\x12B\n" +
-	"\vSendMessage\x12\x18.chat.SendMessageRequest\x1a\x19.chat.SendMessageResponseB4Z2github.com/TakuroBreath/chat-app/pkg/proto/chat_v1b\x06proto3"
+	"\vSendMessage\x12\x18.chat.SendMessageRequest\x1a\x19.chat.SendMessageResponseB Z\x1echat.service/api/proto;chat_v1b\x06proto3"
 
 var (
 	file_chat_proto_rawDescOnce sync.Once
