@@ -64,7 +64,7 @@ func (h *AuthServiceHandler) GetAccessToken(ctx context.Context, req *pb.Refresh
 			return nil, status.Error(codes.Internal, "Internal server error")
 		}
 	}
-	
+
 	return &pb.AccessTokenResponse{
 		AccessToken: tokens.AccessToken,
 	}, nil
