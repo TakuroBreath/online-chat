@@ -25,7 +25,7 @@ type AuthClient struct {
 // NewAuthClient создает новый клиент для сервиса аутентификации
 func NewAuthClient(authServiceAddr string) (*AuthClient, error) {
 	// Устанавливаем соединение с сервисом аутентификации
-	conn, err := grpc.Dial(authServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(authServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +70,7 @@ func (c *AuthClient) GetUserByID(ctx context.Context, userID string) (string, er
 	resp, err := c.userClient.GetUser(ctx, &authpb.GetUserRequest{
 		UserId: userID,
 	})
+
 	if err != nil {
 		log.Printf("Ошибка при получении пользователя: %v", err)
 		return "", ErrUserNotFound

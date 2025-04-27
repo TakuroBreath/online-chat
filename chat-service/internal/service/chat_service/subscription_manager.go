@@ -32,7 +32,7 @@ func (m *SubscriptionManager) Subscribe(chatID string) (chan *models.Message, st
 	// Генерируем уникальный ID подписки
 	subscriptionID := generateSubscriptionID()
 
-	// Проверяем, существует ли уже карта подписок для этого чата
+	// Проверяем, существует ли уже мапа подписок для этого чата
 	if _, ok := m.subscriptions[chatID]; !ok {
 		m.subscriptions[chatID] = make(map[string]chan *models.Message)
 	}
