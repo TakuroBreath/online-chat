@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    volumes:
+      - auth-data:/app/database
+    environment:
+      - GOOSE_DRIVER=sqlite3
+      - GOOSE_DBSTRING=/app/database/auth.db
+      - SQLITE_PATH=/app/database/auth.db
+      - GOOSE_MIGRATION_DIR=/app/internal/migrations
+      - GOOSE_TABLE=custom.goose_migrations
+    ports:
+      - "50051:50051"
+    networks:
+      - chat-network
+    restart: unless-stopped
+
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    volumes:
+      - chat-data:/app/database
+    environment:
+      - GRPC_PORT=50052
+      - SQLITE_PATH=/app/database/chat.db
+      - GOOSE_DRIVER=sqlite3
+      - GOOSE_DBSTRING=/app/database/chat.db
+      - GOOSE_MIGRATION_DIR=/app/internal/migrations
+      - GOOSE_TABLE=custom.goose_migrations
+      - AUTH_SERVICE_ADDR=auth-service:50051
+    ports:
+      - "50052:50052"
+    depends_on:
+      - auth-service
+    networks:
+      - chat-network
+    restart: unless-stopped
+
+volumes:
+  auth-data:
+  chat-data:
+
+networks:
+  chat-network:
+    driver: bridge

@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package chat;
 
-option go_package = "github.com/TakuroBreath/chat-app/pkg/proto/chat_v1";
+option go_package = "chat.service/api/proto;chat_v1";
 
 import "google/protobuf/timestamp.proto"; // Для временных меток
 
