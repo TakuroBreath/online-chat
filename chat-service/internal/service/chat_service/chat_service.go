@@ -104,16 +104,16 @@ func (s *ChatService) SendMessage(ctx context.Context, chatID, userID, text stri
 	}
 
 	// Проверяем, что пользователь является участником чата
-	isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
-	if err != nil {
-		log.Printf("Ошибка при проверке участия пользователя в чате: %v", err)
-		return "", time.Time{}, err
-	}
+	// isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
+	// if err != nil {
+	// 	log.Printf("Ошибка при проверке участия пользователя в чате: %v", err)
+	// 	return "", time.Time{}, err
+	// }
 
-	if !isParticipant {
-		log.Printf("Пользователь %s не является участником чата %s", userID, chatID)
-		return "", time.Time{}, ErrUserNotInChat
-	}
+	// if !isParticipant {
+	// 	log.Printf("Пользователь %s не является участником чата %s", userID, chatID)
+	// 	return "", time.Time{}, ErrUserNotInChat
+	// }
 
 	// Получаем имя пользователя через сервис аутентификации
 	username, err := s.authClient.GetUserByID(ctx, userID)
@@ -151,14 +151,14 @@ func (s *ChatService) SendMessage(ctx context.Context, chatID, userID, text stri
 // GetChatMessages возвращает сообщения чата
 func (s *ChatService) GetChatMessages(ctx context.Context, chatID, userID string, limit, offset int) ([]*models.Message, error) {
 	// Проверяем, что пользователь является участником чата
-	isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
-	if err != nil {
-		return nil, err
-	}
+	// isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if !isParticipant {
-		return nil, ErrUserNotInChat
-	}
+	// if !isParticipant {
+	// 	return nil, ErrUserNotInChat
+	// }
 
 	// Получаем сообщения
 	return s.messageRepo.GetChatMessages(ctx, chatID, limit, offset)
@@ -181,16 +181,16 @@ func (s *ChatService) SubscribeToChat(ctx context.Context, chatID, userID string
 	log.Printf("Попытка подписки пользователя %s на обновления чата %s", userID, chatID)
 
 	// Проверяем, что пользователь является участником чата
-	isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
-	if err != nil {
-		log.Printf("Ошибка при проверке участия пользователя %s в чате %s: %v", userID, chatID, err)
-		return nil, "", err
-	}
+	// isParticipant, err := s.chatRepo.CheckUserInChat(ctx, chatID, userID)
+	// if err != nil {
+	// 	log.Printf("Ошибка при проверке участия пользователя %s в чате %s: %v", userID, chatID, err)
+	// 	return nil, "", err
+	// }
 
-	if !isParticipant {
-		log.Printf("Пользователь %s не является участником чата %s", userID, chatID)
-		return nil, "", ErrUserNotInChat
-	}
+	// if !isParticipant {
+	// 	log.Printf("Пользователь %s не является участником чата %s", userID, chatID)
+	// 	return nil, "", ErrUserNotInChat
+	// }
 
 	// Создаем подписку
 	messageChan, subscriptionID := s.subManager.Subscribe(chatID)

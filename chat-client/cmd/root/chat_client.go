@@ -1,10 +1,12 @@
 package root
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"chat.client/internal/chat_client"
@@ -94,12 +96,16 @@ var connectCmd = &cobra.Command{
 
 		// Чтение сообщений от пользователя и отправка их в чат
 		go func() {
-			var input string
+			reader := bufio.NewReader(os.Stdin)
 			for {
-				_, err := fmt.Scanln(&input)
+				input, err := reader.ReadString('\n')
 				if err != nil {
+					fmt.Printf("Error reading input: %v\n", err)
 					continue
 				}
+
+				// Удаляем символ новой строки в конце
+				input = strings.TrimSpace(input)
 
 				if input != "" {
 					err = client.SendMessage(chatID, input)

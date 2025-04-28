@@ -20,7 +20,7 @@ func NewChatClient(chatServiceAddr string, token string) (*ChatClient, error) {
 	streamAuthInterceptor := StreamAuthInterceptor(token)
 
 	// Устанавливаем соединение с перехватчиками
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		chatServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(authInterceptor),
