@@ -8,7 +8,7 @@ import (
 	"chat.service/internal/app"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq" // PostgreSQL драйвер
 )
 
 func main() {
@@ -20,10 +20,10 @@ func main() {
 
 	ctx := context.Background()
 
-	// Получаем путь к базе данных из переменных окружения
-	sqdsn := os.Getenv("SQLITE_PATH")
-	if sqdsn == "" {
-		sqdsn = "./database/chat.db"
+	// Получаем строку подключения к базе данных из переменных окружения
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatalf("Не указана строка подключения к базе данных (DATABASE_URL)")
 	}
 
 	// Получаем адрес сервиса аутентификации
@@ -32,15 +32,15 @@ func main() {
 		authServiceAddr = "localhost:50051"
 	}
 
-	// Подключаемся к базе данных
-	db, err := sqlx.Connect("sqlite3", sqdsn)
+	// Подключаемся к базе данных PostgreSQL
+	db, err := sqlx.Connect("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)
 	}
 	defer db.Close()
 
-	// Создаем и запускаем приложение
-	application, err := app.NewApp(ctx, db, authServiceAddr)
+	// Создаем и запускаем приложение с PostgreSQL
+	application, err := app.NewPostgresApp(ctx, db, authServiceAddr)
 	if err != nil {
 		log.Fatalf("Ошибка создания приложения: %v", err)
 	}

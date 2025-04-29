@@ -138,7 +138,7 @@ func (r *MessageRepository) SaveMessage(ctx context.Context, message *models.Mes
 func (r *MessageRepository) GetChatMessages(ctx context.Context, chatID string, limit, offset int) ([]*models.Message, error) {
 	var messages []*models.Message
 
-	query := `SELECT id, chat_id, user_id, username, text, created_at FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT id, chat_id, user_id, username, text, created_at FROM messages WHERE chat_id = ? ORDER BY created_at LIMIT ? OFFSET ?`
 	err := r.db.SelectContext(ctx, &messages, query, chatID, limit, offset)
 	if err != nil {
 		return nil, err

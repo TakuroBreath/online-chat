@@ -28,10 +28,26 @@ docker-compose up -d
 # (необходимо настроить .env файл в директории chat-client)
 ```
 
+## Развертывание на удаленной машине
+
+Для переноса Docker-контейнеров на удаленную машину вы можете использовать скрипт `deploy.sh` и следовать инструкциям в [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md).
+
+```bash
+# Сделать скрипт исполняемым
+chmod +x deploy.sh
+
+# Сборка и публикация образов в Docker Hub
+./deploy.sh your_dockerhub_username
+
+# Сборка, публикация и развертывание на удаленной машине
+./deploy.sh your_dockerhub_username user@remote-server
+```
+
 ## Требования
 
 *   Go
 *   Docker (опционально, для запуска зависимостей или контейнеризации)
+
 
 ## Конфигурация
 

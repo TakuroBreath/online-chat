@@ -13,6 +13,7 @@ import (
 	"auth.service/internal/api"
 	"auth.service/internal/repository"
 	"auth.service/internal/service/auth_service"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -22,21 +23,33 @@ type App struct {
 	sessionRepo repository.SessionRepository
 	grpcServer  *grpc.Server
 	port        string
+	db          *sqlx.DB
 }
 
-func NewApp(ctx context.Context, userRepo repository.UserRepository, sessionRepo repository.SessionRepository) *App {
+func NewApp(ctx context.Context, userRepo repository.UserRepository, sessionRepo repository.SessionRepository, db *sqlx.DB) *App {
+	// Run migrations during app initialization
+	if err := InitMigrations(db); err != nil {
+		log.Printf("Error executing migrations: %v", err)
+	}
 	port := getEnv("GRPC_PORT", "50051")
 
 	return &App{
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
 		port:        port,
+		db:          db,
 	}
 }
 
 func (a *App) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	// Проверяем соединение с базой данных перед запуском сервисов
+	if err := a.db.PingContext(ctx); err != nil {
+		log.Printf("Ошибка соединения с базой данных: %v", err)
+		return err
+	}
 
 	userService := auth_service.NewUserService(a.userRepo)
 	authService := auth_service.NewAuthService(
@@ -89,6 +102,13 @@ func (a *App) GracefulShutdown(ctx context.Context) error {
 	log.Println("Shutting down gRPC server...")
 	a.grpcServer.GracefulStop()
 	log.Println("Server gracefully stopped")
+
+	log.Println("Closing database connection...")
+	if err := a.db.Close(); err != nil {
+		log.Printf("Error closing database connection: %v", err)
+	}
+	log.Println("Database connection closed")
+
 	return nil
 }
 
