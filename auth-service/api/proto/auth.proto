@@ -3,23 +3,57 @@ syntax = "proto3";
 package auth;
 
 import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
 
 option go_package = "auth.service/api/proto;auth_v1";
 
 service UserService {
-    rpc CreateUser(CreateUserRequest) returns (UserResponse);
-    rpc GetUser(GetUserRequest) returns (UserResponse);
-    rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
-    rpc DeleteUser(DeleteUserRequest) returns (UserResponse);
+    rpc CreateUser(CreateUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/create-user"
+            body: "*"
+        };
+    };
+    rpc GetUser(GetUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            get: "/v1/auth/get-user"
+        };
+    };
+    rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            put: "/v1/auth/update-user"
+            body: "*"
+        };
+    };
+    rpc DeleteUser(DeleteUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            delete: "/v1/auth/delete-user"
+        };
+    };
 }
 
 service AuthService {
-    rpc Login(LoginRequest) returns (LoginResponse);
-    rpc GetAccessToken(RefreshTokenRequest) returns (AccessTokenResponse);
+    rpc Login(LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/login"
+            body: "*"
+        };
+    };
+    rpc GetAccessToken(RefreshTokenRequest) returns (AccessTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/get-access-token"
+            body: "*"
+        };
+    };
 }
 
 service AccessService {
-    rpc Check(CheckAccessRequest) returns (CheckAccessResponse);
+    rpc Check(CheckAccessRequest) returns (CheckAccessResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/check-access"
+            body: "*"
+        };
+    };
 }
 
 message CreateUserRequest {
