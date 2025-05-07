@@ -41,16 +41,7 @@ func NewApp(ctx context.Context, userRepo repository.UserRepository, sessionRepo
 	}
 }
 
-func (a *App) Run(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	// Проверяем соединение с базой данных перед запуском сервисов
-	if err := a.db.PingContext(ctx); err != nil {
-		log.Printf("Ошибка соединения с базой данных: %v", err)
-		return err
-	}
-
+func (a *App) RegisterServices(grpcServer *grpc.Server) {
 	userService := auth_service.NewUserService(a.userRepo)
 	authService := auth_service.NewAuthService(
 		a.userRepo,
@@ -65,13 +56,25 @@ func (a *App) Run(ctx context.Context) error {
 	authHandler := api.NewAuthServiceHandler(authService)
 	accessHandler := api.NewAccessServiceHandler(accessService)
 
+	pb.RegisterUserServiceServer(grpcServer, userHandler)
+	pb.RegisterAuthServiceServer(grpcServer, authHandler)
+	pb.RegisterAccessServiceServer(grpcServer, accessHandler)
+
+	reflection.Register(grpcServer)
+}
+
+func (a *App) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Проверяем соединение с базой данных перед запуском сервисов
+	if err := a.db.PingContext(ctx); err != nil {
+		log.Printf("Ошибка соединения с базой данных: %v", err)
+		return err
+	}
+
 	a.grpcServer = grpc.NewServer()
-
-	pb.RegisterUserServiceServer(a.grpcServer, userHandler)
-	pb.RegisterAuthServiceServer(a.grpcServer, authHandler)
-	pb.RegisterAccessServiceServer(a.grpcServer, accessHandler)
-
-	reflection.Register(a.grpcServer)
+	a.RegisterServices(a.grpcServer)
 
 	go func() {
 		lis, err := net.Listen("tcp", ":"+a.port)

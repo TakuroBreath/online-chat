@@ -19,7 +19,7 @@ RUN go get -u github.com/golang-migrate/migrate/v4/source/file
 COPY . .
 
 # Собираем приложение
-RUN CGO_ENABLED=1 GOOS=linux go build -a -o auth-service ./cmd/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -a -o auth-service ./cmd/grpc_server/main.go
 
 # Устанавливаем migrate CLI для управления миграциями
 RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
